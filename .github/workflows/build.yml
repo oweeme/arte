@@ -174,10 +174,139 @@ jobs:
           if-no-files-found: warn
 
   # ──────────────────────────────────────────────────────────────
+  # MACOS — .dmg y .app (Intel + Apple Silicon)
+  # ──────────────────────────────────────────────────────────────
+  build-macos:
+    runs-on: macos-latest     # Apple Silicon (M1/M2)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Rust con targets macOS
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: macos-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build macOS (Apple Silicon)
+        run: npm run tauri build -- --target aarch64-apple-darwin
+
+      - name: Build macOS (Intel)
+        run: npm run tauri build -- --target x86_64-apple-darwin
+
+      - name: Crear Universal Binary (Intel + Apple Silicon)
+        run: |
+          # Combinar los dos .app en uno universal con lipo
+          ARM_APP="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Arte.app"
+          X86_APP="src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Arte.app"
+          UNIVERSAL_APP="src-tauri/target/universal/Arte.app"
+
+          mkdir -p "src-tauri/target/universal/Arte.app/Contents/MacOS"
+
+          # Copiar estructura del .app desde ARM
+          cp -R "$ARM_APP/Contents" "src-tauri/target/universal/Arte.app/"
+
+          # Combinar los binarios con lipo
+          lipo -create \
+            "$ARM_APP/Contents/MacOS/Arte" \
+            "$X86_APP/Contents/MacOS/Arte" \
+            -output "src-tauri/target/universal/Arte.app/Contents/MacOS/Arte"
+
+          # Empaquetar en .dmg
+          hdiutil create -volname "Arte" \
+            -srcfolder "src-tauri/target/universal/Arte.app" \
+            -ov -format UDZO \
+            "Arte_universal.dmg"
+
+      - name: Upload macOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: arte-macos-${{ github.ref_name }}
+          path: |
+            Arte_universal.dmg
+            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+          if-no-files-found: warn
+
+  # ──────────────────────────────────────────────────────────────
+  # IOS — .ipa para App Store o TestFlight
+  # ──────────────────────────────────────────────────────────────
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Rust con target iOS
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ios-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Inicializar proyecto iOS (si no existe)
+        run: |
+          if [ ! -d "src-tauri/gen/apple" ]; then
+            ./node_modules/.bin/tauri ios init
+          fi
+
+      - name: Build iOS
+        run: ./node_modules/.bin/tauri ios build
+        env:
+          # Para firmar necesitas un Apple Developer certificate
+          # Sin certificado genera un build sin firmar (solo simulador)
+          TAURI_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
+
+      - name: Upload iOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: arte-ios-${{ github.ref_name }}
+          path: |
+            src-tauri/gen/apple/build/arm64/*.ipa
+            src-tauri/gen/apple/build/**/*.ipa
+          if-no-files-found: warn
+
+  # ──────────────────────────────────────────────────────────────
   # RELEASE — adjunta todos los archivos al GitHub Release
   # ──────────────────────────────────────────────────────────────
   create-release:
-    needs: [build-windows, build-linux, build-android]
+    needs: [build-windows, build-linux, build-android, build-macos]
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/')
 
@@ -199,6 +328,7 @@ jobs:
             | Plataforma | Archivo |
             |-----------|---------|
             | Windows | `Arte_*_x64_en-US.msi` o `Arte_*_x64-setup.exe` |
+            | macOS Universal (Intel + M1/M2) | `Arte_universal.dmg` |
             | Linux (Ubuntu/KDE Neon/Mint) | `Arte_*_amd64.deb` |
             | Linux (Fedora/openSUSE) | `Arte-*-1.x86_64.rpm` |
             | Linux (cualquier distro) | `Arte_*_amd64.AppImage` |
