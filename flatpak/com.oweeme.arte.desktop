@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Arte
+Name[es]=Arte
+GenericName=Drawing Application
+GenericName[es]=Aplicación de Dibujo
+Comment=Motor de dibujo vectorial 3D para arquitectos y diseñadores
+Comment[es]=Motor de dibujo vectorial 3D para arquitectos y diseñadores
+Exec=arte
+Icon=com.oweeme.arte
+Terminal=false
+Type=Application
+Categories=Graphics;VectorGraphics;3DGraphics;
+Keywords=draw;sketch;3d;vector;art;design;architecture;
+Keywords[es]=dibujar;boceto;3d;vectorial;arte;diseño;arquitectura;
+MimeType=application/x-arte;
+StartupWMClass=arte
+StartupNotify=true

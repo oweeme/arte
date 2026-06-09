@@ -1,0 +1,82 @@
+app-id: com.oweeme.arte
+runtime: org.gnome.Platform
+runtime-version: '46'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node20
+
+command: arte
+
+finish-args:
+  # Ventana — soportar tanto X11 (default en KDE Neon) como Wayland
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --device=dri
+  # Variables necesarias para WebKitGTK en KDE Neon / X11
+  - --env=GDK_BACKEND=x11
+  - --env=WEBKIT_DISABLE_DMABUF_RENDERER=1
+  # Acceso a archivos del usuario (guardar/abrir/exportar)
+  - --filesystem=home
+  - --filesystem=/run/media   # discos externos (USB, etc.)
+  # Red (validación de licencia por servidor)
+  - --share=network
+  # Tablet Wacom / stylus
+  - --device=all
+  # Integración con el portapapeles de KDE Plasma
+  - --socket=session-bus
+  - --talk-name=org.kde.klipper
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node20/bin
+  env:
+    CARGO_HOME: /run/build/arte/cargo
+    RUSTFLAGS: ''
+    # KDE Neon tiene Ubuntu 24.04 — webkit2gtk-4.1 disponible
+    PKG_CONFIG_PATH: /app/lib/pkgconfig
+
+modules:
+  - name: arte
+    buildsystem: simple
+    build-options:
+      env:
+        CARGO_HOME: /run/build/arte/cargo
+        npm_config_cache: /run/build/arte/npm-cache
+    build-commands:
+      # Dependencias npm (offline — usa el cache del source)
+      - npm ci --offline
+      # Compilar backend Rust en release
+      - cargo build --release --manifest-path src-tauri/Cargo.toml
+      # Instalar binario principal
+      - install -Dm755 src-tauri/target/release/arte /app/bin/arte
+      # Frontend (HTML/CSS/JS — Tauri los sirve desde el filesystem)
+      - install -Dm644 src/index.html /app/share/arte/index.html
+      - install -Dm644 src/styles.css /app/share/arte/styles.css
+      - install -Dm644 src/main.js    /app/share/arte/main.js
+      # Iconos en los tamaños requeridos por hicolor icon theme
+      - install -Dm644 src-tauri/icons/32x32.png
+          /app/share/icons/hicolor/32x32/apps/com.oweeme.arte.png
+      - install -Dm644 src-tauri/icons/128x128.png
+          /app/share/icons/hicolor/128x128/apps/com.oweeme.arte.png
+      - install -Dm644 src-tauri/icons/128x128@2x.png
+          /app/share/icons/hicolor/256x256/apps/com.oweeme.arte.png
+      # .desktop — entrada en el menú de KDE Plasma
+      - install -Dm644 flatpak/com.oweeme.arte.desktop
+          /app/share/applications/com.oweeme.arte.desktop
+      # Metainfo para KDE Discover / GNOME Software / Flathub
+      - install -Dm644 flatpak/com.oweeme.arte.metainfo.xml
+          /app/share/metainfo/com.oweeme.arte.metainfo.xml
+
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - target
+          - node_modules
+          - .git
+          - .flatpak-build
+          - .flatpak-repo
+
+      # Cache de Cargo — generado con ./flatpak/generar-cache.sh
+      - generated-sources.json
