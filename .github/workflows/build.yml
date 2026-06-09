@@ -6,6 +6,12 @@ on:
       - 'v*'           # se activa con: git tag v0.1.0 && git push --tags
   workflow_dispatch:   # permite lanzarlo manualmente desde GitHub
 
+permissions:
+  contents: write    # necesario para crear GitHub Releases
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
 
   # ──────────────────────────────────────────────────────────────
