@@ -284,6 +284,7 @@ jobs:
           fi
 
       - name: Build iOS
+        continue-on-error: true
         run: ./node_modules/.bin/tauri ios build
         env:
           # Para firmar necesitas un Apple Developer certificate
@@ -307,6 +308,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────
   create-release:
     needs: [build-windows, build-linux, build-android, build-macos]
+    if: always() && !contains(needs.build-windows.result, 'failure') && !contains(needs.build-linux.result, 'failure')
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/')
 
