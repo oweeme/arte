@@ -308,7 +308,6 @@ jobs:
   # ──────────────────────────────────────────────────────────────
   create-release:
     needs: [build-windows, build-linux, build-android, build-macos]
-    if: always()
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/')
 
