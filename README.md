@@ -6,6 +6,17 @@ Crea ilustraciones en el espacio 3D, orbita la cámara libremente, organiza tus 
 
 ![Arte App](src-tauri/arte_export3.jpg)
 
+## Descargar
+
+**[⬇ Descargar Arte v0.1.4](https://github.com/oweeme/arte/releases/tag/v0.1.4)**
+
+| Plataforma | Archivo |
+|---|---|
+| Linux | `.deb` `.rpm` `.AppImage` |
+| Windows | `.msi` `.exe` |
+| macOS | `.dmg` |
+| Android | `.apk` |
+
 ---
 
 ## Características
