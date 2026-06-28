@@ -1,0 +1,52 @@
+# Carpetas privadas / herramientas locales
+doc/
+.claude/
+.vscode/
+
+# Archivos de prueba y exports temporales
+*.arte
+src-tauri/*.jpg
+src-tauri/*.svg
+src-tauri/*.obj
+src-tauri/*.mtl
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Rust / Cargo
+src-tauri/target/
+src-tauri/gen/android/app/build/
+src-tauri/gen/android/.gradle/
+src-tauri/gen/android/buildSrc/.gradle/
+src-tauri/gen/android/buildSrc/build/
+
+# Tauri
+dist-ssr/
+.flatpak-build/
+.flatpak-repo/
+flatpak/generated-sources.json
+flatpak/flatpak-cargo-generator.py
+
+# Keystores — NUNCA subir al repo
+*.jks
+*.keystore
+*.p12
+*.pfx
+
+# Archivos locales
+*.local
+dist/
+
+# Editor
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs
+*.log

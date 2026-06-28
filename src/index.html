@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Arte</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <canvas id="canvas-3d"></canvas>
+
+    <!-- ══ BARRA DE HERRAMIENTAS IZQUIERDA ══ -->
+    <div id="tool-panel" class="glass-panel">
+
+        <div class="app-logo">🎏</div>
+
+        <!-- Herramientas de dibujo -->
+        <div id="brush-selector">
+            <button class="brush-btn active" data-brush="round" title="Tubo redondo">
+                <svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="5" fill="currentColor"/></svg>
+            </button>
+            <button class="brush-btn" data-brush="flat" title="Cinta plana">
+                <svg width="18" height="18" viewBox="0 0 20 20"><rect x="2" y="7" width="16" height="6" rx="1" fill="currentColor"/></svg>
+            </button>
+            <button class="brush-btn" data-brush="sketch" title="Boceto fino">
+                <svg width="18" height="18" viewBox="0 0 20 20"><path d="M2 14 Q6 5 10 10 Q14 15 18 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+            </button>
+            <button class="brush-btn" data-brush="text" title="Texto (T)">
+                <svg width="18" height="18" viewBox="0 0 20 20"><text x="3" y="15" font-size="14" font-weight="bold" fill="currentColor">T</text></svg>
+            </button>
+            <button class="brush-btn" data-brush="eraser" title="Borrador (E)">
+                <svg width="18" height="18" viewBox="0 0 20 20"><rect x="2" y="9" width="11" height="7" rx="1.5" fill="currentColor" opacity="0.25"/><rect x="2" y="9" width="5.5" height="7" rx="1.5" fill="currentColor"/><line x1="14" y1="16" x2="18" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+            <button class="brush-btn" data-brush="pan" title="Mover vista (H)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 3v7.5M9 3a1.5 1.5 0 0 0-3 0v9M9 3a1.5 1.5 0 0 1 3 0v1.5m0 0V3a1.5 1.5 0 0 1 3 0v1.5m0 0a1.5 1.5 0 0 1 3 0v8.5a6 6 0 0 1-6 6H9a6 6 0 0 1-4.243-1.757L3 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="brush-btn" data-brush="move" title="Mover trazo (M)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M12 12h.01M3 12h18M12 3v18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+
+        <div class="tool-sep"></div>
+
+        <!-- Formas geométricas -->
+        <div id="shape-selector">
+            <button class="brush-btn" data-brush="rect" title="Rectángulo (Q)">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
+            </button>
+            <button class="brush-btn" data-brush="circle" title="Círculo / Elipse (C)">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.6"/></svg>
+            </button>
+        </div>
+
+        <div class="tool-sep"></div>
+
+        <!-- Tamaño del pincel -->
+        <div class="tool-group">
+            <div class="size-ring" id="size-display">8</div>
+            <input type="range" id="thickness-slider" min="1" max="60" value="8">
+        </div>
+
+        <!-- Opacidad -->
+        <div class="tool-group">
+            <div class="opacity-icon">
+                <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="currentColor" opacity="0.35"/><path d="M8 2a6 6 0 0 1 0 12" fill="currentColor"/></svg>
+            </div>
+            <input type="range" id="opacity-slider" min="0" max="100" value="100">
+        </div>
+
+        <!-- Tamaño de texto (solo visible en modo texto) -->
+        <div class="tool-group" id="text-size-group" style="display:none">
+            <span class="tool-label" title="Tamaño texto">T</span>
+            <div class="size-ring" id="text-size-display">24</div>
+            <input type="range" id="text-size-slider" min="8" max="120" value="24">
+        </div>
+
+        <div class="tool-sep"></div>
+
+        <!-- Plano 3D -->
+        <div class="tool-group">
+            <span class="tool-label">Plano</span>
+            <div id="plane-selector">
+                <button class="plane-btn active" data-plane="xy" title="Frente XY">XY</button>
+                <button class="plane-btn" data-plane="xz" title="Suelo XZ">XZ</button>
+                <button class="plane-btn" data-plane="yz" title="Lado YZ">YZ</button>
+            </div>
+        </div>
+
+        <!-- Profundidad -->
+        <div class="tool-group">
+            <span class="tool-label">Prof.</span>
+            <div class="depth-display" id="depth-display">0.00</div>
+            <input type="range" id="depth-slider" min="-400" max="400" value="0" step="25">
+        </div>
+
+    </div>
+
+    <!-- ══ PALETA DE COLOR (siempre visible, inferior izquierda) ══ -->
+    <div id="color-dock" class="glass-panel">
+        <div class="drag-handle dock-handle" title="Arrastrar panel">
+            <svg width="16" height="8" viewBox="0 0 16 8"><circle cx="4" cy="2" r="1.2" fill="currentColor" opacity=".4"/><circle cx="8" cy="2" r="1.2" fill="currentColor" opacity=".4"/><circle cx="12" cy="2" r="1.2" fill="currentColor" opacity=".4"/><circle cx="4" cy="6" r="1.2" fill="currentColor" opacity=".4"/><circle cx="8" cy="6" r="1.2" fill="currentColor" opacity=".4"/><circle cx="12" cy="6" r="1.2" fill="currentColor" opacity=".4"/></svg>
+        </div>
+
+        <!-- Color activo + fondo -->
+        <div class="color-pair">
+            <label class="color-main" id="stroke-swatch" title="Color trazo" style="background:#1a1a2e">
+                <input type="color" id="stroke-color" value="#1a1a2e">
+            </label>
+            <label class="color-bg-chip" id="bg-swatch" title="Color fondo" style="background:#f8f6f1">
+                <input type="color" id="bg-color" value="#f8f6f1">
+            </label>
+        </div>
+
+        <!-- Paleta rápida (siempre visible) -->
+        <div id="quick-palette"></div>
+
+        <!-- Fila de colores recientes -->
+        <div class="palette-label">Recientes</div>
+        <div id="recent-palette"></div>
+
+    </div>
+
+    <!-- ══ VISTAS RÁPIDAS 3D ══ -->
+    <div id="views-panel" class="glass-panel">
+        <span class="tool-label" style="color:var(--text-muted);padding:0 2px">VISTA</span>
+        <button class="view-btn" data-view="perspective" title="Perspectiva (Numpad 5)">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 13L4 2h7l3 11H1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M3 7h9" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>
+            3D
+        </button>
+        <button class="view-btn" data-view="front" title="Frente (Numpad 1)">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M7.5 5v5M5 7.5h5" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>
+            F
+        </button>
+        <button class="view-btn" data-view="side" title="Lateral (Numpad 3)">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 2l9 3v8L3 13V2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            L
+        </button>
+        <button class="view-btn" data-view="top" title="Superior (Numpad 7)">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><ellipse cx="7.5" cy="7.5" rx="5.5" ry="3" stroke="currentColor" stroke-width="1.2"/><path d="M7.5 4.5v6M4 7.5h7" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>
+            T
+        </button>
+        <button class="view-btn" data-view="iso" title="Isométrica">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 2L13 5.5v5L7.5 14 2 10.5v-5L7.5 2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M7.5 2v12M2 10.5l5.5-4.5 5.5 4.5" stroke="currentColor" stroke-width="1" opacity=".4"/></svg>
+            ISO
+        </button>
+    </div>
+
+    <!-- ══ PANEL DE CAPAS (derecha) ══ -->
+    <div id="layers-panel" class="glass-panel">
+        <div class="layers-header drag-handle">
+            <span class="tool-label" style="color:var(--accent)">CAPAS</span>
+            <button id="btn-add-layer" title="Nueva capa" class="layer-add-btn">+</button>
+        </div>
+        <div id="layers-list"></div>
+    </div>
+
+    <!-- ══ BARRA SUPERIOR DE ACCIONES ══ -->
+    <div id="action-panel" class="glass-panel">
+        <button id="btn-undo" title="Deshacer (Ctrl+Z)">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5a5 5 0 1 1 1.3 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 3.5v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="btn-clear" title="Limpiar capa activa">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 3.5h11M5 3.5V2a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1.5M5.5 6.5v4M9.5 6.5v4M2.5 3.5l.7 8.5a.5.5 0 0 0 .5.5h6.6a.5.5 0 0 0 .5-.5l.7-8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="h-sep"></div>
+        <button id="btn-save" title="Guardar .arte (Ctrl+S)">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 13V3.5L4.5 1.5H12a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5H2.5a.5.5 0 0 1-.5-.5z" stroke="currentColor" stroke-width="1.3"/><rect x="4.5" y="8" width="6" height="5" rx=".3" stroke="currentColor" stroke-width="1.3"/><path d="M5 2h4v3H5z" stroke="currentColor" stroke-width="1.3"/></svg>
+        </button>
+        <button id="btn-load" title="Abrir .arte">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 5a1 1 0 0 1 1-1h3l1.5 1.5h6a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V5z" stroke="currentColor" stroke-width="1.3"/></svg>
+        </button>
+        <div class="h-sep"></div>
+        <button id="btn-export-jpg" class="btn-accent-sm" title="Exportar JPG">JPG</button>
+        <button id="btn-export-svg" class="btn-accent-sm btn-svg" title="Exportar SVG vectorial">SVG</button>
+        <button id="btn-export-obj" class="btn-accent-sm btn-obj" title="Exportar modelo 3D OBJ">OBJ</button>
+        <div class="h-sep"></div>
+        <button id="btn-presentation" title="Modo Presentación (Tab)" class="btn-icon">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="2.5" width="13" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M5 13.5h5M7.5 11.5v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <button id="btn-about" title="Ayuda" class="btn-icon">?</button>
+    </div>
+
+    <!-- Barra inferior: zoom + coords + grid/snap -->
+    <div id="status-bar">
+        <button id="btn-grid" class="status-btn active" title="Cuadrícula 3D (G)">
+            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M0 4h12M0 8h12M4 0v12M8 0v12" stroke="currentColor" stroke-width="1"/></svg>
+            Grid
+        </button>
+        <button id="btn-snap" class="status-btn" title="Snap a cuadrícula (S)">
+            <svg width="13" height="13" viewBox="0 0 12 12"><circle cx="6" cy="6" r="2" fill="currentColor"/><circle cx="1" cy="1" r="1" fill="currentColor" opacity=".4"/><circle cx="11" cy="1" r="1" fill="currentColor" opacity=".4"/><circle cx="1" cy="11" r="1" fill="currentColor" opacity=".4"/><circle cx="11" cy="11" r="1" fill="currentColor" opacity=".4"/></svg>
+            Snap
+        </button>
+        <div class="status-sep"></div>
+        <span id="coord-display" class="coord-display">X:0.00  Y:0.00  Z:0.00</span>
+        <div class="status-sep"></div>
+        <span id="zoom-value" class="zoom-val">100%</span>
+        <div id="zoom-indicator" style="display:none"></div>
+    </div>
+
+    <!-- Input de texto flotante -->
+    <input id="text-input" type="text" placeholder="Escribe y presiona Enter…" autocomplete="off" spellcheck="false">
+
+    <!-- Cursor dinámico -->
+    <div id="cursor-ring"></div>
+
+    <!-- Modal Acerca de -->
+    <div id="modal-about" class="modal-overlay">
+        <div class="modal-card glass-panel">
+            <div class="modal-logo">🎏 Arte</div>
+            <div class="modal-scroll">
+                <p style="color:#666;font-size:12px">Motor de dibujo vectorial 3D</p>
+
+                <!-- Licencia -->
+                <div class="modal-license">
+                    <b id="license-title">🔐 Versión Demo</b><br>
+                    <span id="license-desc" style="color:var(--text-muted)">En modo demo puedes dibujar, guardar y abrir. Ingresa tu licencia para habilitar exportar JPG, SVG y OBJ.</span>
+                    <input type="text" id="license-input" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" autocomplete="off" spellcheck="false">
+                    <div class="license-status" id="license-status"></div>
+                </div>
+
+                <div class="modal-author">
+                    <strong>Hector Martinez</strong><br>
+                    <a href="https://oweeme.com" target="_blank">oweeme.com</a>
+                </div>
+
+                <!-- Donaciones -->
+                <div class="modal-donate">
+                    ☕ <b>¿Te gusta Arte?</b><br>
+                    Si te es útil, considera apoyar el desarrollo:<br>
+                    
+                    <a href="https://www.paypal.com/paypalme/oweeandme" target="_blank">PayPal</a>
+                </div>
+
+                <div class="modal-hint">
+                    <b>Dibujar</b><br>
+                    Clic izquierdo → Dibujar<br>
+                    Clic derecho → Orbitar vista 3D<br>
+                    Rueda del mouse → Zoom<br>
+                    <br>
+                    <b>Mover vista (Pan)</b><br>
+                    Botón central + arrastrar<br>
+                    Alt + arrastrar<br>
+                    Space + arrastrar<br>
+                    Herramienta Mano (H) + clic izq<br>
+                    2 dedos arrastrar (tablet/Wacom)<br>
+                    <br>
+                    <b>Zoom</b><br>
+                    Rueda del mouse &nbsp;|&nbsp; + / -<br>
+                    Pinch 2 dedos (tablet/Wacom)<br>
+                    <br>
+                    <b>Atajos de teclado</b><br>
+                    1 Tubo · 2 Plano · 3 Boceto · 4 Texto<br>
+                    E Borrador · H Mano · M Mover trazo · Q Rectángulo · C Círculo<br>
+                    G Cuadrícula &nbsp;|&nbsp; S Snap a grid<br>
+                    [ ] Mover plano de dibujo (profundidad ±0.25)<br>
+                    F1 Frente (plano XY) · F3 Lateral (YZ) · F7 Superior (XZ)<br>
+                    Ctrl+Z Deshacer &nbsp;|&nbsp; Ctrl+S Guardar<br>
+                    R Reset vista &nbsp;|&nbsp; Tab Presentación &nbsp;|&nbsp; Esc Salir
+                </div>
+            </div>
+            <button id="btn-close-about" class="btn-full-accent">Cerrar</button>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

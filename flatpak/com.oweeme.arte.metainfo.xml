@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.oweeme.arte</id>
+
+  <name>Arte</name>
+  <summary>Motor de dibujo vectorial 3D</summary>
+
+  <metadata_license>MIT</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+
+  <description>
+    <p>
+      Arte es una aplicación de dibujo vectorial 3D para arquitectos, diseñadores
+      y artistas. Permite dibujar en perspectiva 3D con herramientas profesionales
+      directamente sobre un lienzo con cuadrícula tridimensional.
+    </p>
+    <p>Características principales:</p>
+    <ul>
+      <li>Dibujo 3D perspectivo con cuadrícula XYZ</li>
+      <li>Herramientas: Tubo, Plano, Boceto, Texto, Borrador</li>
+      <li>Formas geométricas: Rectángulo, Círculo/Elipse</li>
+      <li>Sistema de capas con visibilidad y bloqueo</li>
+      <li>Exportar a JPG, SVG vectorial y OBJ 3D</li>
+      <li>Soporte para tablet y lápiz Wacom</li>
+      <li>Snap a cuadrícula y múltiples vistas (Frente, Lateral, Superior, ISO)</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">com.oweeme.arte.desktop</launchable>
+
+  <url type="homepage">https://oweeme.com</url>
+  <url type="bugtracker">https://github.com/oweeme/arte/issues</url>
+  <url type="donation">https://ko-fi.com/oweeme</url>
+
+  <developer_name>Hector Martinez</developer_name>
+
+  <developer id="com.oweeme">
+    <name>Hector Martinez</name>
+  </developer>
+
+  <provides>
+    <binary>arte</binary>
+    <mediatype>application/x-arte</mediatype>
+  </provides>
+
+  <mimetypes>
+    <mimetype>application/x-arte</mimetype>
+  </mimetypes>
+
+  <releases>
+    <release version="0.2.0" date="2026-06-09">
+      <description>
+        <p>Mejoras en esta versión:</p>
+        <ul>
+          <li>Fix: click en el centro de los botones de herramienta</li>
+          <li>Modal de ayuda con scroll</li>
+          <li>Sistema de licencia — modo demo y activación</li>
+          <li>Sección de donaciones</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.1.0" date="2026-05-01">
+      <description>
+        <p>Primera versión pública de Arte.</p>
+      </description>
+    </release>
+  </releases>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Lienzo 3D en perspectiva con cuadrícula</caption>
+      <image>https://oweeme.com/arte/screenshot-main.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1"/>
+
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+
+  <recommends>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>tablet</control>
+  </recommends>
+</component>
